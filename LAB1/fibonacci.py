@@ -85,3 +85,20 @@ def fibonacci_backtracking(n, memo={}):
         memo[n] = fibonacci_backtracking(n - 1) + fibonacci_backtracking(n - 2)
         return memo[n]
 
+
+# measure time
+def measure_time(func, arg):
+    start_time = time.time()
+    result = func(arg)
+    end_time = time.time()
+    return result, end_time - start_time
+
+
+# print results in a table
+def print_results_table(method_name, input_series, times):
+    print(f"{'n':<10} {'Time (seconds)':<20}")
+    print("-" * 30)
+    for n, time_taken in zip(input_series, times):
+        print(f"{n:<10} {time_taken:<20.4f}")
+    print("\n")
+
