@@ -3,22 +3,17 @@ import matplotlib.pyplot as plt
 import random
 import sys
 import numpy as np
-
-
 sys.setrecursionlimit(16000)
 
 
-# TO DO : add arrays to test, tables + plots
-
-# QUICK sort with Lamuto partition
+# QUICK sort with Lomuto partition
 
 # partition function
 def partition(array, low, high):
     # choose the pivot as last element
     pivot = array[high]
 
-    # Index of smaller element and indicates
-    # the right position of pivot found so far
+    # index of smaller element and indicates the right position of pivot found so far
     i = low - 1
 
     # move smaller elements to the left
