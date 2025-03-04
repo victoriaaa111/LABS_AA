@@ -2,11 +2,13 @@ import time
 import matplotlib.pyplot as plt
 import random
 import sys
+import numpy as np
+
 
 sys.setrecursionlimit(16000)
 
 
-# TO DO : Cocktain Sort + add arrays to test, tables + plots
+# TO DO : add arrays to test, tables + plots
 
 # QUICK sort with Lamuto partition
 
@@ -36,14 +38,14 @@ def swap(array, i, j):
 
 
 # The quick sort function implementation
-def quickSort(array, low, high):
+def quick_sort(array, low, high):
     if low < high:
         # pi is the index of the pivot after partition
         pi = partition(array, low, high)
 
         # recursion calls to sort rest of array
-        quickSort(array, low, pi - 1)
-        quickSort(array, pi + 1, high)
+        quick_sort(array, low, pi - 1)
+        quick_sort(array, pi + 1, high)
 
 
 # MERGE sort
@@ -127,7 +129,7 @@ def heapify(arr, n, i):
 
 
 # Main function to do heap sort
-def heapSort(arr):
+def heap_sort(arr):
     n = len(arr)
 
     # build heap (rearrange array)
@@ -144,24 +146,24 @@ def heapSort(arr):
 
 
 # COCKTAIL sort
-def cocktailSort(a):
+def cocktail_sort(a):
     n = len(a)
     swapped = True
     start = 0
     end = n - 1
-    while (swapped == True):
+    while swapped:
 
         # reset the swapped flag on entering the loop,because it might be true from a previous iteration.
         swapped = False
 
         # loop from left to right same as the bubble
         for i in range(start, end):
-            if (a[i] > a[i + 1]):
+            if a[i] > a[i + 1]:
                 a[i], a[i + 1] = a[i + 1], a[i]
                 swapped = True
 
         # if nothing moved, then array is sorted.
-        if (swapped == False):
+        if not swapped:
             break
 
         # otherwise, reset the swapped flag so that it can be used in the next stage
@@ -172,7 +174,7 @@ def cocktailSort(a):
 
         # from right to left, doing the same comparison as in the previous stage
         for i in range(end - 1, start - 1, -1):
-            if (a[i] > a[i + 1]):
+            if a[i] > a[i + 1]:
                 a[i], a[i + 1] = a[i + 1], a[i]
                 swapped = True
 
@@ -180,3 +182,67 @@ def cocktailSort(a):
         start = start + 1
 
 
+# generate arrays for testing
+def generate_arrays(size):
+    random_array = np.random.randint(0, 10000, size).tolist()
+    sorted_array = sorted(random_array)
+    reversed_array = sorted_array[::-1]
+    few_unique_array = [random.choice([100, 500, 1000, 5000]) for _ in range(size)]
+    nearly_sorted_array = sorted_array.copy()
+    for _ in range(size // 10):  # some swaps
+        i, j = random.sample(range(size), 2)
+        nearly_sorted_array[i], nearly_sorted_array[j] = nearly_sorted_array[j], nearly_sorted_array[i]
+
+    return {
+        "Random": random_array,
+        "Sorted": sorted_array,
+        "Reversed": reversed_array,
+        "Few Unique": few_unique_array,
+        "Nearly Sorted": nearly_sorted_array
+    }
+
+
+# measure time of execution function
+def measure_time(sort_function, array):
+    start_time = time.time()
+    # if function is quick_sort or merge_sort, pass extra arguments
+    if sort_function in [quick_sort, merge_sort]:
+        sort_function(array.copy(), 0, len(array) - 1)
+    else:
+        sort_function(array.copy())
+
+    return time.time() - start_time
+
+# plot each sorting method function
+def plot_sorting_times():
+    sizes = [500, 1500, 5000, 10000, 15000]  # Updated sizes
+    sorting_algorithms = {
+        "Quick Sort": lambda arr: quick_sort(arr, 0, len(arr) - 1),
+        "Merge Sort": lambda arr: merge_sort(arr, 0, len(arr) - 1),
+        "Heap Sort": heap_sort,
+        "Cocktail Sort": cocktail_sort
+    }
+
+    colors = ["blue", "red", "green", "orange", "purple"]
+    array_types = ["Random", "Sorted", "Reversed", "Few Unique", "Nearly Sorted"]
+
+    for sort_name, sort_func in sorting_algorithms.items():
+        plt.figure(figsize=(10, 6))
+
+        for array_type, color in zip(array_types, colors):
+            times = []
+            for size in sizes:
+                test_arrays = generate_arrays(size)
+                time_taken = measure_time(sort_func, test_arrays[array_type])
+                times.append(time_taken)
+            plt.plot(sizes, times, marker='o', linestyle='-', color=color, label=array_type)
+
+        plt.xlabel("Array Size")
+        plt.ylabel("Execution Time (seconds)")
+        plt.title(f"{sort_name} Performance")
+        plt.legend()
+        plt.grid()
+        plt.show()
+
+
+plot_sorting_times()
