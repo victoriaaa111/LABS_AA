@@ -1,4 +1,7 @@
+import time
 import random
+import matplotlib.pyplot as plt
+from collections import deque
 
 
 # graph generation functions
@@ -91,3 +94,66 @@ def generate_disconnected_graph(n):
             adj[i].append(parent)
 
     return adj
+
+
+def bfs(adj):
+    n = len(adj)
+    visited = [False] * n
+    result = []
+    queue = deque([0])  # Start from node 0
+    visited[0] = True
+
+    while queue:
+        vertex = queue.popleft()
+        result.append(vertex)
+
+        for neighbor in adj[vertex]:
+            if not visited[neighbor]:
+                visited[neighbor] = True
+                queue.append(neighbor)
+
+    for i in range(n):
+        if not visited[i]:
+            queue = deque([i])
+            visited[i] = True
+
+            while queue:
+                vertex = queue.popleft()
+                result.append(vertex)
+
+                for neighbor in adj[vertex]:
+                    if not visited[neighbor]:
+                        visited[neighbor] = True
+                        queue.append(neighbor)
+
+    return result
+
+
+def dfs(adj):
+    n = len(adj)
+    visited = [False] * n
+    result = []
+
+    for start in range(n):
+        if not visited[start]:
+            stack = [start]
+
+            while stack:
+                vertex = stack.pop()
+                if not visited[vertex]:
+                    visited[vertex] = True
+                    result.append(vertex)
+
+                    for neighbor in reversed(adj[vertex]):
+                        if not visited[neighbor]:
+                            stack.append(neighbor)
+
+    return result
+
+
+# function to measure execution time
+def measure_time(algorithm, graph):
+    start_time = time.time()
+    algorithm(graph)
+    end_time = time.time()
+    return (end_time - start_time) * 1000  # convert to milliseconds
