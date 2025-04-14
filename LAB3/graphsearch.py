@@ -58,7 +58,7 @@ def measure_time(algorithm, graph):
 
 
 # test sizes
-sizes = [i for i in range(1, 400, 25)]
+sizes = [i for i in range(1, 1000, 50)]
 
 # graph types and their generation functions
 graph_types = {
@@ -130,8 +130,8 @@ plt.show()
 # create individual plots for each graph type
 for graph_type in graph_types:
     plt.figure(figsize=(10, 6))
-    plt.plot(sizes, results_bfs[graph_type], marker='o', label='BFS')
-    plt.plot(sizes, results_dfs[graph_type], marker='x', label='DFS')
+    plt.plot(sizes, results_bfs[graph_type], marker='o', label='BFS', color='pink')
+    plt.plot(sizes, results_dfs[graph_type], marker='x', label='DFS', color='mediumslateblue')
 
     plt.title(f'BFS vs DFS Performance on {graph_type}')
     plt.xlabel('Number of Nodes')
