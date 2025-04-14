@@ -2,120 +2,21 @@ import time
 import random
 import matplotlib.pyplot as plt
 from collections import deque
+import sys
+from generate_graphs import *
 
-
-# graph generation functions
-# generate a complete graph with n nodes.
-def generate_complete_graph(n):
-    adj = [[] for _ in range(n)]
-    for i in range(n):
-        for j in range(n):
-            if i != j:
-                adj[i].append(j)
-    return adj
-
-
-# generate a dense graph with n nodes
-def generate_dense_graph(n, edge_ratio=0.8):
-    adj = [[] for _ in range(n)]
-    for i in range(n):
-        for j in range(n):
-            if i != j and random.random() < edge_ratio:
-                adj[i].append(j)
-    return adj
-
-
-# generate a sparse graph with n nodes and approximately 2n edges
-def generate_sparse_graph(n):
-    adj = [[] for _ in range(n)]
-    # create a spanning tree first to ensure connectivity
-    for i in range(1, n):
-        parent = random.randint(0, i - 1)
-        adj[parent].append(i)
-        adj[i].append(parent)
-
-    # add a few more random edges to make it more than just a tree
-    extra_edges = n // 2
-    for _ in range(extra_edges):
-        u = random.randint(0, n - 1)
-        v = random.randint(0, n - 1)
-        if u != v and v not in adj[u]:
-            adj[u].append(v)
-            adj[v].append(u)
-
-    return adj
-
-
-# generate a binary tree with n nodes.
-def generate_tree_graph(n):
-    adj = [[] for _ in range(n)]
-    for i in range(1, n):
-        parent = (i - 1) // 2
-        adj[parent].append(i)
-        adj[i].append(parent)
-    return adj
-
-
-# generate a path graph with n nodes
-def generate_path_graph(n):
-    adj = [[] for _ in range(n)]
-    for i in range(n - 1):
-        adj[i].append(i + 1)
-        adj[i + 1].append(i)
-    return adj
-
-
-# generate a star graph with n nodes.
-def generate_star_graph(n):
-    adj = [[] for _ in range(n)]
-    # node 0 is the center
-    for i in range(1, n):
-        adj[0].append(i)
-        adj[i].append(0)
-    return adj
-
-
-# generate a disconnected graph with n nodes divided into components
-def generate_disconnected_graph(n):
-    adj = [[] for _ in range(n)]
-
-    # create approximately sqrt(n) components
-    num_components = max(2, int(n ** 0.5))
-    nodes_per_component = n // num_components
-
-    for c in range(num_components):
-        start = c * nodes_per_component
-        end = (c + 1) * nodes_per_component if c < num_components - 1 else n
-
-        # create a small connected component
-        for i in range(start + 1, end):
-            parent = random.randint(start, i - 1)
-            adj[parent].append(i)
-            adj[i].append(parent)
-
-    return adj
+sys.setrecursionlimit(16000)
 
 
 def bfs(adj):
     n = len(adj)
     visited = [False] * n
     result = []
-    queue = deque([0])  # Start from node 0
-    visited[0] = True
 
-    while queue:
-        vertex = queue.popleft()
-        result.append(vertex)
-
-        for neighbor in adj[vertex]:
-            if not visited[neighbor]:
-                visited[neighbor] = True
-                queue.append(neighbor)
-
-    for i in range(n):
-        if not visited[i]:
-            queue = deque([i])
-            visited[i] = True
+    for start in range(n):
+        if not visited[start]:
+            queue = deque([start])
+            visited[start] = True
 
             while queue:
                 vertex = queue.popleft()
@@ -134,19 +35,16 @@ def dfs(adj):
     visited = [False] * n
     result = []
 
-    for start in range(n):
-        if not visited[start]:
-            stack = [start]
+    def dfs_visit(u):
+        visited[u] = True
+        result.append(u)
+        for neighbor in adj[u]:
+            if not visited[neighbor]:
+                dfs_visit(neighbor)
 
-            while stack:
-                vertex = stack.pop()
-                if not visited[vertex]:
-                    visited[vertex] = True
-                    result.append(vertex)
-
-                    for neighbor in reversed(adj[vertex]):
-                        if not visited[neighbor]:
-                            stack.append(neighbor)
+    for i in range(n):
+        if not visited[i]:
+            dfs_visit(i)
 
     return result
 
@@ -154,6 +52,93 @@ def dfs(adj):
 # function to measure execution time
 def measure_time(algorithm, graph):
     start_time = time.time()
-    algorithm(graph)
+    result = algorithm(graph)
     end_time = time.time()
     return (end_time - start_time) * 1000  # convert to milliseconds
+
+
+# test sizes
+sizes = [i for i in range(1, 400, 25)]
+
+# graph types and their generation functions
+graph_types = {
+    "Complete Graph": generate_complete_graph,
+    "Dense Graph": generate_dense_graph,
+    "Sparse Graph": generate_sparse_graph,
+    "Tree Graph": generate_tree_graph,
+    "Cyclic Graph": generate_cyclic_graph,
+    "Acyclic Graph": generate_acyclic_graph,
+    "Connected Graph": generate_connected_graph,
+    "Disconnected Graph": generate_disconnected_graph,
+    "Undirected Graph": generate_undirected_graph,
+    "Directed Graph": generate_directed_graph,
+    "Grid Graph": generate_grid_graph
+}
+
+# remove weighted graph since it uses a different structure
+if "Weighted Graph" in graph_types:
+    del graph_types["Weighted Graph"]
+
+# store results
+results_bfs = {graph_type: [] for graph_type in graph_types}
+results_dfs = {graph_type: [] for graph_type in graph_types}
+
+for size in sizes:
+    print(f"Testing graphs with {size} nodes...")
+    for graph_type, generator in graph_types.items():
+        # generate graph once per type and size for fair comparison
+        graph = generator(size)
+
+        # measure BFS time
+        bfs_time = measure_time(bfs, graph)
+        results_bfs[graph_type].append(bfs_time)
+
+        # measure DFS time
+        dfs_time = measure_time(dfs, graph)
+        results_dfs[graph_type].append(dfs_time)
+
+        print(f"  {graph_type}: BFS={bfs_time:.2f}ms, DFS={dfs_time:.2f}ms")
+
+# create plots
+plt.figure(figsize=(12, 8))
+
+# plot BFS performance
+plt.subplot(2, 1, 1)
+for graph_type, times in results_bfs.items():
+    plt.plot(sizes, times, marker='o', label=graph_type)
+
+plt.title('BFS Performance Across Graph Types')
+plt.xlabel('Number of Nodes')
+plt.ylabel('Time (ms)')
+plt.grid(True)
+plt.legend()
+
+# plot DFS performance
+plt.subplot(2, 1, 2)
+for graph_type, times in results_dfs.items():
+    plt.plot(sizes, times, marker='o', label=graph_type)
+
+plt.title('DFS Performance Across Graph Types')
+plt.xlabel('Number of Nodes')
+plt.ylabel('Time (ms)')
+plt.grid(True)
+plt.legend()
+
+plt.tight_layout()
+plt.show()
+
+# create individual plots for each graph type
+for graph_type in graph_types:
+    plt.figure(figsize=(10, 6))
+    plt.plot(sizes, results_bfs[graph_type], marker='o', label='BFS')
+    plt.plot(sizes, results_dfs[graph_type], marker='x', label='DFS')
+
+    plt.title(f'BFS vs DFS Performance on {graph_type}')
+    plt.xlabel('Number of Nodes')
+    plt.ylabel('Time (ms)')
+    plt.grid(True)
+    plt.legend()
+
+    plt.tight_layout()
+    plt.show()
+
