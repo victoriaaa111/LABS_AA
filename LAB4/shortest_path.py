@@ -16,6 +16,7 @@ from generate_graphs import (
     generate_disconnected_graph
 )
 
+
 def dijkstra(adj, start):
     n = len(adj)
     dist = [float('inf')] * n
@@ -44,6 +45,7 @@ def dijkstra(adj, start):
                     if v not in nodes_to_process:
                         nodes_to_process.append(v)
     return dist
+
 
 def floyd_warshall(adj):
     n = len(adj)
@@ -126,7 +128,7 @@ def plot_overall_results(sizes, results):
     # Floyd-Warshall overall
     plt.subplot(2, 1, 2)
     for graph_type in results['Floyd-Warshall']:
-        #only plot if we have results for this graph type
+        # only plot if we have results for this graph type
         if len(results['Floyd-Warshall'][graph_type]) == len(sizes):
             plt.plot(sizes, results['Floyd-Warshall'][graph_type], label=graph_type, marker='o')
     plt.title('Floyd-Warshall Algorithm Performance')
@@ -203,7 +205,8 @@ def run_tests(max_nodes=500, step=10):
 
     return sizes, results
 
-# Main execution
+
+# main execution
 if __name__ == "__main__":
     sizes, results = run_tests(max_nodes=300, step=10)
     plot_overall_results(sizes, results)

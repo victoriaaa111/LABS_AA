@@ -16,6 +16,7 @@ from generate_graphs import (
     generate_connected_graph
 )
 
+
 # convert unweighted to weighted
 def convert_to_weighted(adj):
     weighted = [{} for _ in range(len(adj))]
@@ -26,6 +27,7 @@ def convert_to_weighted(adj):
                 weighted[u][v] = weight
                 weighted[v][u] = weight
     return weighted
+
 
 # Kruskal's algorithm
 def kruskal(adj):
@@ -58,6 +60,7 @@ def kruskal(adj):
             mst_weight += w
     return mst_weight
 
+
 # Prim's algorithm
 def prim(adj):
     n = len(adj)
@@ -85,10 +88,12 @@ def test_kruskal(adj):
     kruskal(adj)
     return time.time() - start
 
+
 def test_prim(adj):
     start = time.time()
     prim(adj)
     return time.time() - start
+
 
 # generate all graph types with weights
 def generate_all_weighted_graphs(n):
@@ -106,6 +111,7 @@ def generate_all_weighted_graphs(n):
         "Grid": convert_to_weighted(generate_grid_graph(n)),
         "Connected": convert_to_weighted(generate_connected_graph(n))
     }
+
 
 # run performance tests
 def run_tests(max_nodes=300, step=10):
@@ -139,6 +145,7 @@ def run_tests(max_nodes=300, step=10):
 
     return sizes, results
 
+
 # plotting functions
 def plot_overall_mst_results(sizes, results):
     plt.figure(figsize=(12, 8))
@@ -168,6 +175,7 @@ def plot_overall_mst_results(sizes, results):
     plt.tight_layout()
     plt.show()
 
+
 def plot_individual_mst_results(sizes, results):
     graph_types = list(set(results['Kruskal'].keys()) | set(results['Prim'].keys()))
 
@@ -190,6 +198,7 @@ def plot_individual_mst_results(sizes, results):
             plt.legend()
             plt.grid(True)
             plt.show()
+
 
 if __name__ == "__main__":
     sizes, results = run_tests(max_nodes=200, step=20)

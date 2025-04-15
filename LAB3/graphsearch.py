@@ -1,5 +1,4 @@
 import time
-import random
 import matplotlib.pyplot as plt
 from collections import deque
 import sys
@@ -141,4 +140,3 @@ for graph_type in graph_types:
 
     plt.tight_layout()
     plt.show()
-

@@ -2,6 +2,8 @@ import random
 import math
 # graph generation functions
 # generate a complete graph with n nodes.
+
+
 def generate_complete_graph(n):
     adj = [[] for _ in range(n)]
     for i in range(n):
@@ -155,6 +157,7 @@ def generate_grid_graph(n):
                     adj[down_node].append(current_node)
 
     return adj
+
 
 def generate_connected_graph(n):
     # create an empty adjacency list
