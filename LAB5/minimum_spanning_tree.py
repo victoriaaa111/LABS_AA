@@ -1,18 +1,31 @@
 import random
-from generate_graphs import *
+import time
+import matplotlib.pyplot as plt
+from generate_graphs import (
+    generate_complete_graph,
+    generate_dense_graph,
+    generate_sparse_graph,
+    generate_tree_graph,
+    generate_disconnected_graph,
+    generate_directed_graph,
+    generate_undirected_graph,
+    generate_cyclic_graph,
+    generate_acyclic_graph,
+    generate_weighted_graph,
+    generate_grid_graph,
+    generate_connected_graph
+)
 
-# convert unweighted graph to weighted graph
-def convert_to_weighted(adj, min_weight=1, max_weight=10):
-    n = len(adj)
-    weighted_adj = [{} for _ in range(n)]
-    for u in range(n):
+# convert unweighted to weighted
+def convert_to_weighted(adj):
+    weighted = [{} for _ in range(len(adj))]
+    for u in range(len(adj)):
         for v in adj[u]:
-            if v not in weighted_adj[u]:
-                weight = random.randint(min_weight, max_weight)
-                weighted_adj[u][v] = weight
-                weighted_adj[v][u] = weight
-    return weighted_adj
-
+            if v not in weighted[u]:
+                weight = random.randint(1, 10)
+                weighted[u][v] = weight
+                weighted[v][u] = weight
+    return weighted
 
 # Kruskal's algorithm
 def kruskal(adj):
@@ -65,3 +78,120 @@ def prim(adj):
             selected[v] = True
             mst_weight += min_edge
     return mst_weight
+
+
+def test_kruskal(adj):
+    start = time.time()
+    kruskal(adj)
+    return time.time() - start
+
+def test_prim(adj):
+    start = time.time()
+    prim(adj)
+    return time.time() - start
+
+# generate all graph types with weights
+def generate_all_weighted_graphs(n):
+    return {
+        "Complete": convert_to_weighted(generate_complete_graph(n)),
+        "Dense": convert_to_weighted(generate_dense_graph(n)),
+        "Sparse": convert_to_weighted(generate_sparse_graph(n)),
+        "Tree": convert_to_weighted(generate_tree_graph(n)),
+        "Disconnected": convert_to_weighted(generate_disconnected_graph(n)),
+        "Directed": convert_to_weighted(generate_directed_graph(n)),
+        "Undirected": convert_to_weighted(generate_undirected_graph(n)),
+        "Cyclic": convert_to_weighted(generate_cyclic_graph(n)),
+        "Acyclic": convert_to_weighted(generate_acyclic_graph(n)),
+        "Weighted": generate_weighted_graph(n),
+        "Grid": convert_to_weighted(generate_grid_graph(n)),
+        "Connected": convert_to_weighted(generate_connected_graph(n))
+    }
+
+# run performance tests
+def run_tests(max_nodes=300, step=10):
+    sizes = list(range(10, max_nodes + 1, step))
+    graph_types = [
+        "Complete", "Dense", "Sparse", "Tree", "Disconnected",
+        "Directed", "Undirected", "Cyclic", "Acyclic",
+        "Weighted", "Grid", "Connected"
+    ]
+    results = {
+        'Kruskal': {gt: [] for gt in graph_types},
+        'Prim': {gt: [] for gt in graph_types}
+    }
+
+    for n in sizes:
+        print(f"Testing size: {n}")
+        graphs = generate_all_weighted_graphs(n)
+
+        for gtype in graph_types:
+            adj = graphs[gtype]
+            try:
+                t1 = test_kruskal(adj)
+                results['Kruskal'][gtype].append(t1)
+            except:
+                results['Kruskal'][gtype].append(float('nan'))
+            try:
+                t2 = test_prim(adj)
+                results['Prim'][gtype].append(t2)
+            except:
+                results['Prim'][gtype].append(float('nan'))
+
+    return sizes, results
+
+# plotting functions
+def plot_overall_mst_results(sizes, results):
+    plt.figure(figsize=(12, 8))
+
+    # Kruskal overall
+    plt.subplot(2, 1, 1)
+    for graph_type in results['Kruskal']:
+        if len(results['Kruskal'][graph_type]) == len(sizes):
+            plt.plot(sizes, results['Kruskal'][graph_type], label=graph_type, marker='o')
+    plt.title('Kruskal Algorithm Performance')
+    plt.xlabel('Number of Nodes')
+    plt.ylabel('Time (seconds)')
+    plt.legend()
+    plt.grid(True)
+
+    # Prim overall
+    plt.subplot(2, 1, 2)
+    for graph_type in results['Prim']:
+        if len(results['Prim'][graph_type]) == len(sizes):
+            plt.plot(sizes, results['Prim'][graph_type], label=graph_type, marker='o')
+    plt.title('Prim Algorithm Performance')
+    plt.xlabel('Number of Nodes')
+    plt.ylabel('Time (seconds)')
+    plt.legend()
+    plt.grid(True)
+
+    plt.tight_layout()
+    plt.show()
+
+def plot_individual_mst_results(sizes, results):
+    graph_types = list(set(results['Kruskal'].keys()) | set(results['Prim'].keys()))
+
+    for graph_type in graph_types:
+        plt.figure(figsize=(10, 6))
+        has_data = False
+
+        if len(results['Kruskal'].get(graph_type, [])) == len(sizes):
+            plt.plot(sizes, results['Kruskal'][graph_type], '-', marker='o', label='Kruskal', color='cornflowerblue')
+            has_data = True
+
+        if len(results['Prim'].get(graph_type, [])) == len(sizes):
+            plt.plot(sizes, results['Prim'][graph_type], '-', marker='x', label='Prim', color='seagreen')
+            has_data = True
+
+        if has_data:
+            plt.title(f'Performance on {graph_type} Graph')
+            plt.xlabel('Number of Nodes')
+            plt.ylabel('Time (seconds)')
+            plt.legend()
+            plt.grid(True)
+            plt.show()
+
+if __name__ == "__main__":
+    sizes, results = run_tests(max_nodes=200, step=20)
+    plot_overall_mst_results(sizes, results)
+    plot_individual_mst_results(sizes, results)
